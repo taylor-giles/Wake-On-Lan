@@ -5,7 +5,7 @@ import configparser
 from logger import logger as LOGGER
 
 
-config = configparser.ConfigParser(default_section='ENV')
+config = configparser.ConfigParser()
 config.read('configs/prod.ini')
 
 
