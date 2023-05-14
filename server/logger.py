@@ -1,3 +1,6 @@
+__all__ = ['logger']
+
+
 import logging
 import click
 from copy import copy
@@ -7,8 +10,8 @@ from typing import Optional, Literal
 
 class ColorFormatter(logging.Formatter):
     level_name_colors = {
-        logging.DEBUG: lambda level_name: click.style(str(level_name), fg="green"), 
-        logging.INFO: lambda level_name: click.style(str(level_name), fg="bright_cyan"), 
+        logging.DEBUG: lambda level_name: click.style(str(level_name), fg="green"),
+        logging.INFO: lambda level_name: click.style(str(level_name), fg="bright_cyan"),
         logging.WARNING: lambda level_name: click.style(str(level_name), fg="bright_yellow"),
         logging.ERROR: lambda level_name: click.style(str(level_name), fg="red"),
         logging.CRITICAL: lambda level_name: click.style(str(level_name), fg="bright_red"),
@@ -52,19 +55,20 @@ class ColorFormatter(logging.Formatter):
         return super().formatMessage(recordcopy)
 
 
-# The official RychlyAPI logger
-logger = logging.getLogger("rychlyapi")
-
-
 rychlyLogFormatter = ColorFormatter(
     "[{asctime}][{process}][{location}][{levelprefix}]: {message}",
     style='{',
     use_colors=True
 )
 
-# Initialize the logger
-ch = logging.StreamHandler()
-ch.setFormatter(rychlyLogFormatter)
+
+# Format the Uvicorn Loggers
+loggers = [ logging.getLogger("uvicorn"), logging.getLogger("uvicorn.access") ]
+
+for _logger in loggers:
+    _logger.handlers[0].setFormatter(rychlyLogFormatter)
+
+# The official logger
+logger = logging.getLogger("uvicorn")
 
 logger.setLevel("DEBUG")
-logger.addHandler(ch)

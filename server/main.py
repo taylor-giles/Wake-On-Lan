@@ -1,24 +1,10 @@
-import logging
-from config import ENV, CORS
-from user import (
-    BareUserModel,
-    AUTHENTICATED_USER,
-    Token,
-    authenticate_user,
-    create_access_token,
-    insert_user,
-    get_user,
-    UserExistsException
-)
-
 from time import perf_counter
-from pydantic import BaseModel, validator
-from typing import Annotated
-from fastapi import FastAPI, Request, Response, HTTPException, Depends, status
+from pymongo import MongoClient
+from config import ENV, CORS, DB
+from logger import logger as LOGGER
+from fastapi import FastAPI, Request
+from routes.users import router as users_router
 from fastapi.middleware.cors import CORSMiddleware
-from logger import logger as LOGGER, rychlyLogFormatter
-from fastapi.security import OAuth2PasswordRequestForm
-
 
 LOGGER.info(f'Starting {ENV.name} Server')
 LOGGER.info(f'Author: {ENV.author}')
@@ -27,7 +13,6 @@ LOGGER.info(f'Author: {ENV.author}')
 app = FastAPI()
 
 
-# Setup CORS
 app.add_middleware(
    CORSMiddleware,
     allow_origins = CORS.allow_origins,
@@ -38,13 +23,15 @@ app.add_middleware(
 
 
 @app.on_event('startup')
-async def startup_event():
-    loggers = [ logging.getLogger("uvicorn"), logging.getLogger("uvicorn.access") ]
+def startup_db_client():
+    app.mongodb_client = MongoClient(DB.uri)
+    app.database = app.mongodb_client[DB.name]
+    LOGGER.info('Connected to the MongoDB database')
 
-    for _logger in loggers:
-        _logger.handlers[0].setFormatter(rychlyLogFormatter)
 
-    loggers[0].info("Initialized logger")
+@app.on_event('shutdown')
+def shutdown_db_client():
+    app.mongodb_client.close()
 
 
 @app.middleware('http')
@@ -57,72 +44,5 @@ async def log_requests_middleware(request: Request, call_next):
     return response
 
 
-@app.post("/users/login", tags=['Users'], response_model=Token)
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    access_token = create_access_token(user)
-    LOGGER.info(f'Logged in user, {user.username}')
-    return access_token
-
-
-@app.get("/users/me", tags=['Users'], response_model=BareUserModel)
-async def get_me(current_user: AUTHENTICATED_USER):
-    ''' Get the current logged in user '''
-
-    return current_user
-
-
-class CreateUserBody(BaseModel):
-    username: str
-    password: str
-
-    @validator('password')
-    def validate_password(cls, v):
-        assert len(v) > 4, 'Password must be more than 4 characters'
-        return v
-
-
-@app.post('/users/create', tags=['Users'], response_model=BareUserModel)
-async def create_user(response: Response, body: CreateUserBody):
-    ''' Create a new user '''
-
-    username = body.username
-    password = body.password
-
-    try:
-        insert_user(username, password)
-
-    except UserExistsException:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Conflict, user exists"
-        )
-
-    new_user = get_user(username)
-
-    return new_user
-
-
-@app.post('/wol/{client_id}/{computer_id}', tags=['Wake On Lan'])
-async def wake_on_lan(
-    response: Response,
-    current_user: AUTHENTICATED_USER,
-    client_id: str,
-    computer_id: str
-):
-    ''' Send the wake on lan command '''
-
-    return {
-        'client_id': client_id,
-        'computer_id': computer_id,
-        'message': 'WOL!'
-    }
-
-
+LOGGER.info('Initializing Routes')
+app.include_router(users_router, tags=["Users"], prefix="/users")

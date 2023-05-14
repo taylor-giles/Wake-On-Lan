@@ -1,8 +1,3 @@
-'''
-    Wake-On-Lan (WOL) handling code along with modeling
-'''
-
-
 from pydantic import BaseModel
 
 

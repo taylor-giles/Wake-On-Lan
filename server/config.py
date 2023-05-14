@@ -1,4 +1,4 @@
-__all__ = ['ENV', 'JWT', 'CORS']
+__all__ = ['ENV', 'JWT', 'CORS', 'DB']
 
 
 import configparser
@@ -32,3 +32,11 @@ class JWT:
     secret_key = config['JWT'].get('secret')
     algorithm = config['JWT'].get('algorithm')
     access_token_expires_minutes = config['JWT'].getint('expires_minutes')
+
+
+class DB:
+    ''' Mongodb fields '''
+    uri = config['DB'].get('connection_uri')
+    name = config['DB'].get('name')
+    user_collection = config['DB'].get('user_collection')
+    client_collection = config['DB'].get('client_collection')
