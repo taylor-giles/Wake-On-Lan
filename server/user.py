@@ -31,7 +31,6 @@ class UserModel(BareUserModel):
     hashed_password: str
 
 
-
 id_counter = 1
 
 fake_db = {
