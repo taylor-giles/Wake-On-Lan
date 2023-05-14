@@ -1,8 +1,8 @@
 from time import perf_counter
 from pymongo import MongoClient
-from config import ENV, CORS, DB
-from logger import logger as LOGGER
 from fastapi import FastAPI, Request
+from tools.config import ENV, CORS, DB
+from tools.logger import logger as LOGGER
 from routes.users import router as users_router
 from fastapi.middleware.cors import CORSMiddleware
 

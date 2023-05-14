@@ -3,14 +3,14 @@
 '''
 
 
-from config import JWT, DB
 from typing import Annotated
 from jose import JWTError, jwt
+from tools.config import JWT, DB
 from models.auth import TokenData
 from urllib.request import Request
 from models.users import UserModel
-from logger import logger as LOGGER
 from datetime import timedelta, datetime
+from tools.logger import logger as LOGGER
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, Depends, status, Request
 

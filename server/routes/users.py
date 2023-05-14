@@ -1,8 +1,8 @@
-from config import DB
+from tools.config import DB
 from typing import Annotated
 from models.auth import Token
-from logger import logger as LOGGER
 from pydantic import BaseModel, validator
+from tools.logger import logger as LOGGER
 from fastapi.encoders import jsonable_encoder
 from models.users import BareUserModel, UserModel
 from fastapi.security import OAuth2PasswordRequestForm

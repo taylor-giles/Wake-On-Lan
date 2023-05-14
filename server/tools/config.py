@@ -2,7 +2,7 @@ __all__ = ['ENV', 'JWT', 'CORS', 'DB']
 
 
 import configparser
-from logger import logger as LOGGER
+from tools.logger import logger as LOGGER
 
 
 config = configparser.ConfigParser()
