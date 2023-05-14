@@ -16,3 +16,4 @@ The server handles interaction with the Mongodb database and also interaction wi
 5. With python 3.10, create a new environment ensuring the packages in `requirements.txt` are installed.  If you wish to follow this project's standard, create the environment in `server/.venv`
 6. Source the environment
 7. Start the server
+8. Visit http://{server-address}/docs for the interactive docs or http://{server-address}/redoc for alternative documentation 
